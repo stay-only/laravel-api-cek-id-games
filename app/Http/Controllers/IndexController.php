@@ -2,26 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use GuzzleHttp\Client;
+use App\Services\GameProviderFactory;
 use Illuminate\Http\Request;
 
 class IndexController extends Controller
 {
-    public function cek(Request $request) {
-        //inisialisasi inputan dari form
-        $game_code = $request->input('game_code');
-        $user_id = $request->input('user_id');
-    
-        // Membuat URL API dengan parameter yang diterima dari request
-        $apiUrl = "https://v1.apigames.id/merchant/[MERCHANT MU]/cek-username/{$game_code}?user_id={$user_id}&signature=[SIGNATURE MU]";
+    public function cek(Request $request) 
+    {
+        // Validasi input dasar
+        $request->validate([
+            'game_code' => 'required|string',
+            'user_id' => 'required|string',
+            'zone_id' => 'nullable|string',
+            'provider' => 'nullable|string'
+        ]);
 
-        // Menggunakan Guzzle untuk membuat permintaan GET ke API
-        $client = new Client();
-        $response = $client->get($apiUrl);
-    
-        // Mendapatkan dan mengembalikan data dari respons API
-        $apiData = json_decode($response->getBody(), true);
-    
-        return view('index' , compact('apiData'));
+        $gameCode = $request->input('game_code');
+        $userId = $request->input('user_id');
+        $zoneId = $request->input('zone_id');
+        $preferredProvider = $request->input('provider', 'apigames');
+
+        // Menggunakan GameProviderFactory untuk mengecek ID game
+        // Ini akan memindahkan logika API ke service layer
+        $apiData = GameProviderFactory::checkGameIdWithFallback(
+            $gameCode, 
+            $userId, 
+            $zoneId, 
+            $preferredProvider
+        );
+
+        return view('index', compact('apiData'));
     }
 }

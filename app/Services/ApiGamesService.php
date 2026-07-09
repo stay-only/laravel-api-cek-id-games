@@ -16,7 +16,7 @@ class ApiGamesService
     public function __construct()
     {
         $this->client = new Client();
-        $this->baseUrl = config('services.apigames.base_url');
+        $this->baseUrl = config('services.apigames.base_url', 'https://v1.apigames.id');
         $this->merchantId = config('services.apigames.merchant_id');
         $this->signature = config('services.apigames.signature');
     }
